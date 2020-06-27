@@ -1,5 +1,7 @@
 'use strict';
 
+const { response } = require("express");
+
 const weatherApp = {
   selectedLocations: {},
   addDialogContainer: document.getElementById('addDialogContainer'),
@@ -145,8 +147,23 @@ function getForecastFromNetwork(coords) {
  * @return {Object} The weather forecast, if the request fails, return null.
  */
 function getForecastFromCache(coords) {
-  
+  if (!('caches' in window)) {
+    return null;
+  }
 
+  const url = `${window.location.origin}/forecast/${coords}`;
+
+  return caches.match(url)
+  .then((response) => {
+    if (response) {
+      return response.json();
+    }
+    return null;
+  })
+  .catch((err) => {
+    console.error('Error getting data from cache', err);
+    return null;
+  })
 }
 
 /**
@@ -181,6 +198,10 @@ function updateData() {
     const location = weatherApp.selectedLocations[key];
     const card = getForecastCard(location);
     
+    getForecastFromCache(location.geo)
+    .then((forecast) => {
+      renderForecast(card, forecast);
+    });
 
     // Get the forecast data from the network.
     getForecastFromNetwork(location.geo)
