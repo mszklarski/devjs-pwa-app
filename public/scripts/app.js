@@ -1,7 +1,5 @@
 'use strict';
 
-const { response } = require("express");
-
 const weatherApp = {
   selectedLocations: {},
   addDialogContainer: document.getElementById('addDialogContainer'),
